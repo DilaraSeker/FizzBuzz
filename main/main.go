@@ -3,24 +3,24 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	"strconv"
 )
 
 func main() {
 
-	fmt.Print("Enter integer: ")
-	var input int
-	_, _ = fmt.Scanf("%d", &input)
+	http.HandleFunc("/fizzbuzz/:count", fizzbuzz)
+	log.Fatal(http.ListenAndServe(":3000", nil))
 
-	for i := 1; i <= input; i++ {
-		fizzbuzz(i)
-	}
 }
 
-func fizzbuzz(input int) {
+func fizzbuzz(responseWriter http.ResponseWriter, request *http.Request) {
 
+	var input = 16
 	fizz := "fizz"
 	buzz := "buzz"
+
 	var output []string
 	for i := 1; i <= input; i++ {
 		if i%3 == 0 && i%5 == 0 {
@@ -41,7 +41,12 @@ func fizzbuzz(input int) {
 
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
-	} else {
-		fmt.Printf("{\"fizzBuzz\": %s}", jsonObj)
+	} else if request.Method == "GET" {
+
+		responseWriter.Header().Set("Content-Type", "application/json")
+		responseWriter.WriteHeader(http.StatusOK)
+		respData := fmt.Sprintf("{\"fizzBuzz\": %s}", jsonObj)
+		responseWriter.Write([]byte(respData))
+
 	}
 }
